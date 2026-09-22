@@ -1,0 +1,3 @@
+{
+  "_description": "Danh sách các Issue ID bị loại trừ thủ công (Manual Blacklist) do kiểm định Spot-check phát hiện. Cú pháp: \"issue_id\": \"Lý do loại trừ\""
+}
