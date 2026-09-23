@@ -16,7 +16,7 @@ import sys
 import json
 import argparse
 from collections import Counter
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 
 if sys.platform == "win32":
     try:
@@ -26,15 +26,64 @@ if sys.platform == "win32":
 
 
 class DatasetBiasChecker:
-    def __init__(self, data: List[Dict[str, Any]]):
-        self.data = data
-        self.total = len(data)
+    def __init__(self, data: Any, raw_path: Optional[str] = "data/raw/all_crawled_raw.json"):
+        # Tải raw lookup để đối chiếu bổ sung số liệu LOC/tests nếu dataset ở dạng compact
+        self.raw_lookup: Dict[str, Dict[str, Any]] = {}
+        if raw_path and os.path.exists(raw_path):
+            try:
+                with open(raw_path, "r", encoding="utf-8") as f:
+                    raw_list = json.load(f)
+                    if isinstance(raw_list, list):
+                        for r in raw_list:
+                            r_id = r.get("id")
+                            if r_id:
+                                self.raw_lookup[r_id] = r
+                            repo_full = r.get("repository", {}).get("full_name", "")
+                            num = r.get("issue", {}).get("number")
+                            if repo_full and num:
+                                alt_id = f"{repo_full.replace('/', '__')}-{num}"
+                                self.raw_lookup[alt_id] = r
+            except Exception:
+                pass
+
+        # Hỗ trợ cả định dạng gom nhóm (dict có key "repos") và định dạng phẳng (list)
+        if isinstance(data, dict) and "repos" in data:
+            self.data = []
+            for r in data.get("repos", []):
+                repo_name = r.get("repo", "")
+                repo_url = r.get("repo_url", "")
+                for iss in r.get("issues", []):
+                    item = dict(iss)
+                    item["repo"] = repo_name
+                    if "repository" not in item:
+                        item["repository"] = {"full_name": repo_name, "url": repo_url}
+
+                    # Bổ sung changes/tests từ raw lookup nếu dạng compact chưa có
+                    rec_id = item.get("id")
+                    if rec_id in self.raw_lookup:
+                        raw_rec = self.raw_lookup[rec_id]
+                        if "changes" not in item:
+                            item["changes"] = raw_rec.get("changes", {})
+                        if "tests" not in item:
+                            item["tests"] = raw_rec.get("tests", {})
+                    self.data.append(item)
+        elif isinstance(data, list):
+            self.data = data
+        else:
+            self.data = []
+
+        self.total = len(self.data)
 
     def analyze_repositories(self) -> Dict[str, Any]:
         """Phân tích phân bố theo Repository."""
         repo_counts = Counter()
         for item in self.data:
-            repo = item.get("repository", {}).get("full_name") or "unknown"
+            repo_info = item.get("repository")
+            if isinstance(repo_info, dict):
+                repo = repo_info.get("full_name") or repo_info.get("name")
+            else:
+                repo = item.get("repo")
+            repo = repo or "unknown"
             repo_counts[repo] += 1
 
         results = []
@@ -127,9 +176,13 @@ class DatasetBiasChecker:
         }
 
         for item in self.data:
-            issue = item.get("issue", {})
-            title = (issue.get("title") or "").lower()
-            body = (issue.get("body") or "").lower()
+            issue = item.get("issue")
+            if isinstance(issue, dict):
+                title = (issue.get("title") or item.get("title") or "").lower()
+                body = (issue.get("body") or item.get("body") or "").lower()
+            else:
+                title = (item.get("title") or "").lower()
+                body = (item.get("body") or "").lower()
             text = title + " " + body
 
             if any(k in text for k in ["cve", "vulnerability", "csrf", "xss", "security", "exploit", "sanitize"]):
