@@ -31,19 +31,40 @@ class PromptBuilder:
             return match.group(1).strip()
         return content
 
-    def build_prompts(self, issue_record: Dict[str, Any]) -> Tuple[str, str]:
-        """Tạo cặp (system_prompt, user_prompt) cho một issue record."""
-        issue = issue_record.get("issue", {})
-        repo = issue_record.get("repository", {})
+    def build_prompts(self, issue_record: Dict[str, Any], include_base_code: bool = True) -> Tuple[str, str]:
+        """Tạo cặp (system_prompt, user_prompt) cho một issue record kèm base_code nếu có."""
+        issue = issue_record.get("issue") if isinstance(issue_record.get("issue"), dict) else {}
+        repo = issue_record.get("repository") if isinstance(issue_record.get("repository"), dict) else {}
 
-        repo_name = repo.get("full_name", repo.get("name", "Unknown"))
-        issue_number = issue.get("number", "N/A")
-        issue_title = issue.get("title", "").strip()
-        issue_body = issue.get("body", "").strip()
+        repo_name = repo.get("full_name") or repo.get("name") or issue_record.get("repo") or "Unknown"
+        issue_number = issue.get("number") or issue_record.get("number") or issue_record.get("id", "N/A")
+        issue_title = (issue.get("title") or issue_record.get("title") or "").strip()
+        issue_body = (issue.get("body") or issue_record.get("body") or "").strip()
 
         # Cắt bớt body nếu quá dài (> 4000 ký tự) để tránh tràn token
         if len(issue_body) > 4000:
             issue_body = issue_body[:4000] + "\n... [truncated due to length] ..."
+
+        # Trích xuất đoạn code trước khi merge (base_code) để AI so sánh và chấm điểm
+        code_context = ""
+        if include_base_code:
+            base_code_snippets = []
+            # Trường hợp base_code lưu trực tiếp trong issue_record
+            if issue_record.get("base_code"):
+                base_code_snippets.append(f"```\n{issue_record['base_code'].strip()}\n```")
+            else:
+                files = issue_record.get("changes", {}).get("files", [])
+                for f in files:
+                    fname = f.get("filename", "")
+                    bcode = f.get("base_code", "").strip()
+                    if bcode and (f.get("is_source") or f.get("is_test")):
+                        base_code_snippets.append(f"File: `{fname}`\n```\n{bcode}\n```")
+
+            if base_code_snippets:
+                joined_code = "\n\n".join(base_code_snippets[:3])
+                if len(joined_code) > 2500:
+                    joined_code = joined_code[:2500] + "\n... [truncated base code] ...\n```"
+                code_context = f"\n\nĐoạn code liên quan trước khi sửa/merge (Base Code / Code before merge):\n{joined_code}\n"
 
         user_prompt = f"""Dưới đây là thông tin về GitHub Issue / Software Requirement cần phân tích:
 
@@ -52,7 +73,7 @@ Issue Number: #{issue_number}
 Tiêu đề: {issue_title}
 
 Mô tả chi tiết:
-{issue_body}
+{issue_body}{code_context}
 
 Hãy phân tích requirement trên theo rubric và trả về kết quả định dạng JSON chính xác:
 {{

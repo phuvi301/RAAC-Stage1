@@ -219,11 +219,16 @@ def main():
     cleaned_data = cleaner.clean(raw_data)
     cleaner.print_report()
 
+    from scripts.group_dataset_by_repo import group_by_repo
+
+    # Chuyển đổi trực tiếp sang định dạng gom nhóm compact theo repo
+    grouped_compact = group_by_repo(cleaned_data, include_details=False)
+
     os.makedirs(os.path.dirname(args.output), exist_ok=True)
     with open(args.output, "w", encoding="utf-8") as f:
-        json.dump(cleaned_data, f, indent=2, ensure_ascii=False)
+        json.dump(grouped_compact, f, indent=2, ensure_ascii=False)
 
-    logger.info(f"Cleaned dataset saved successfully to {args.output}")
+    logger.info(f"Cleaned dataset saved directly in compact grouped format to {args.output} ({grouped_compact['total_issues']} issues across {grouped_compact['total_repos']} repos)")
 
 
 if __name__ == "__main__":

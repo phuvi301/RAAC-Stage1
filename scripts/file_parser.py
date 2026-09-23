@@ -96,8 +96,42 @@ class FileParser:
         return True
 
     @classmethod
-    def parse_changed_files(cls, raw_files: List[Dict[str, Any]]) -> Dict[str, Any]:
-        """Phân loại và tổng hợp thống kê toàn bộ file thay đổi trong PR."""
+    def extract_base_code(cls, patch: str, max_chars: int = 2000) -> str:
+        """
+        Trích xuất đoạn mã trước khi merge (base code) từ patch diff.
+        Chỉ giữ lại các dòng ngữ cảnh (context lines) và dòng bị xóa/sửa (-),
+        bỏ qua các dòng được thêm mới (+).
+        """
+        if not patch:
+            return ""
+
+        base_lines = []
+        for line in patch.splitlines():
+            # Bỏ qua hunk headers và file headers
+            if line.startswith("@@") or line.startswith("---") or line.startswith("+++"):
+                continue
+            if line.startswith("\\ No newline at end of file"):
+                continue
+            # Dòng được thêm mới trong PR -> không tồn tại ở base code
+            if line.startswith("+"):
+                continue
+            # Dòng bị xóa hoặc thay thế trong PR -> tồn tại ở base code
+            if line.startswith("-"):
+                base_lines.append(line[1:])
+            # Dòng ngữ cảnh giữ nguyên
+            elif line.startswith(" "):
+                base_lines.append(line[1:])
+            else:
+                base_lines.append(line)
+
+        result = "\n".join(base_lines).strip()
+        if len(result) > max_chars:
+            result = result[:max_chars] + "\n... [truncated base code] ..."
+        return result
+
+    @classmethod
+    def parse_changed_files(cls, raw_files: List[Dict[str, Any]], base_commit: str = "", repo_full_name: str = "") -> Dict[str, Any]:
+        """Phân loại và tổng hợp thống kê toàn bộ file thay đổi trong PR kèm base_code."""
         parsed_files = []
         test_files = []
         source_files = []
@@ -126,6 +160,15 @@ class FileParser:
             if is_src and patch_snippet:
                 is_comment_only = cls.is_comment_or_doc_patch(patch_snippet)
 
+            # Trích xuất đoạn code trước khi merge (base_code)
+            base_code = ""
+            if status != "added" and patch:
+                base_code = cls.extract_base_code(patch)
+
+            base_file_url = ""
+            if repo_full_name and base_commit:
+                base_file_url = f"https://github.com/{repo_full_name}/blob/{base_commit}/{filename}"
+
             if is_test:
                 test_files.append(filename)
             elif is_doc:
@@ -146,7 +189,10 @@ class FileParser:
                 "is_doc": is_doc,
                 "is_comment_only": is_comment_only,
                 # Lưu patch ngắn (tối đa 1500 chars mỗi file để tối ưu bộ nhớ)
-                "patch_snippet": patch_snippet
+                "patch_snippet": patch_snippet,
+                # Đoạn code trước khi merge (base code) để AI so sánh và chấm điểm
+                "base_code": base_code,
+                "base_file_url": base_file_url
             })
 
         return {

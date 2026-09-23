@@ -74,16 +74,23 @@ class IssueCrawler:
                         # Bỏ qua nếu là PR hoặc không tồn tại
                         continue
 
-                    # 5. Lấy danh sách files thay đổi
+                    pr_meta = PRParser.parse_pr_metadata(pr)
+                    base_commit = pr_meta.get("base_commit", "")
+
+                    # 5. Lấy danh sách files thay đổi kèm base_code
                     files_raw = self.client.get_pr_files(owner, repo, pr_number)
                     if not files_raw:
                         continue
 
-                    files_summary = FileParser.parse_changed_files(files_raw)
-                    pr_meta = PRParser.parse_pr_metadata(pr)
+                    files_summary = FileParser.parse_changed_files(
+                        files_raw,
+                        base_commit=base_commit,
+                        repo_full_name=f"{owner}/{repo}"
+                    )
 
                     record = {
                         "id": record_id,
+                        "base_commit": base_commit,
                         "issue": {
                             "number": issue_num,
                             "title": issue_raw.get("title", "").strip(),

@@ -27,11 +27,17 @@ class PRParser:
     @classmethod
     def parse_pr_metadata(cls, pr_data: Dict[str, Any]) -> Dict[str, Any]:
         """Chuẩn hóa dữ liệu PR từ GitHub API response."""
+        base_sha = pr_data.get("base", {}).get("sha", "")
+        pr_url = pr_data.get("html_url", "")
+        base_commit_url = ""
+        if base_sha and "/pull/" in pr_url:
+            base_commit_url = f"{pr_url.rsplit('/pull/', 1)[0]}/commit/{base_sha}"
+
         return {
             "pr_number": pr_data.get("number"),
             "pr_title": pr_data.get("title", "").strip(),
             "pr_body": pr_data.get("body", "") or "",
-            "pr_url": pr_data.get("html_url", ""),
+            "pr_url": pr_url,
             "state": pr_data.get("state"),
             "merged": pr_data.get("merged", False) or bool(pr_data.get("merged_at")),
             "merged_at": pr_data.get("merged_at"),
@@ -39,6 +45,10 @@ class PRParser:
             "closed_at": pr_data.get("closed_at"),
             "base_branch": pr_data.get("base", {}).get("ref", "main"),
             "head_branch": pr_data.get("head", {}).get("ref", ""),
+            "base_commit": base_sha,
+            "base_commit_url": base_commit_url,
+            "head_commit": pr_data.get("head", {}).get("sha", ""),
+            "merge_commit_sha": pr_data.get("merge_commit_sha", ""),
             "author": pr_data.get("user", {}).get("login", ""),
             "is_bot": pr_data.get("user", {}).get("type") == "Bot" or "[bot]" in (pr_data.get("user", {}).get("login", "").lower())
         }

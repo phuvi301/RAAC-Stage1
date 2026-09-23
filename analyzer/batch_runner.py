@@ -186,7 +186,24 @@ def main():
         return
 
     with open(args.input, "r", encoding="utf-8") as f:
-        issues = json.load(f)
+        data = json.load(f)
+
+    # Hỗ trợ cả định dạng phẳng (list) và định dạng gom nhóm theo repo (dict với key "repos")
+    if isinstance(data, dict) and "repos" in data:
+        issues = []
+        for r in data["repos"]:
+            repo_name = r.get("repo", "")
+            repo_url = r.get("repo_url", "")
+            for iss in r.get("issues", []):
+                iss_copy = dict(iss)
+                iss_copy["repo"] = repo_name
+                iss_copy["repository"] = {"full_name": repo_name, "url": repo_url}
+                issues.append(iss_copy)
+    elif isinstance(data, list):
+        issues = data
+    else:
+        logger.error(f"Unrecognized dataset format in {args.input}")
+        return
 
     # Nếu dùng mock thì không cần delay
     delay = 0.0 if args.provider == "mock" else args.delay

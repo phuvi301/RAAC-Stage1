@@ -35,98 +35,30 @@ data/
 
 ## 2. Schema Dữ liệu Đã Làm Sạch (Cleaned Benchmark Schema)
 
-Tệp `data/cleaned/cleaned_benchmark.json` chứa danh sách các record có cấu trúc:
+Tệp `data/cleaned/cleaned_benchmark.json` được phân nhóm theo từng repository và lưu các issue chuẩn:
 
 ```json
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "CleanedRequirementRecord",
-  "type": "object",
-  "required": ["id", "issue", "repository", "linked_pr", "changes", "tests"],
-  "properties": {
-    "id": {
-      "type": "string",
-      "description": "Định danh duy nhất: {owner}_{repo}_{issue_number}"
-    },
-    "issue": {
-      "type": "object",
-      "required": ["number", "title", "body", "state", "url"],
-      "properties": {
-        "number": { "type": "integer" },
-        "title": { "type": "string" },
-        "body": { "type": "string" },
-        "labels": { "type": "array", "items": { "type": "string" } },
-        "state": { "type": "string", "enum": ["closed"] },
-        "created_at": { "type": "string", "format": "date-time" },
-        "closed_at": { "type": "string", "format": "date-time" },
-        "url": { "type": "string", "format": "uri" }
-      }
-    },
-    "repository": {
-      "type": "object",
-      "required": ["owner", "name", "full_name", "url"],
-      "properties": {
-        "owner": { "type": "string" },
-        "name": { "type": "string" },
-        "full_name": { "type": "string" },
-        "url": { "type": "string", "format": "uri" }
-      }
-    },
-    "linked_pr": {
-      "type": "object",
-      "required": ["pr_number", "pr_title", "merged", "merged_at"],
-      "properties": {
-        "pr_number": { "type": "integer" },
-        "pr_title": { "type": "string" },
-        "pr_body": { "type": "string" },
-        "pr_url": { "type": "string", "format": "uri" },
-        "state": { "type": "string", "enum": ["closed"] },
-        "merged": { "type": "boolean", "const": true },
-        "merged_at": { "type": "string", "format": "date-time" },
-        "author": { "type": "string" },
-        "is_bot": { "type": "boolean" }
-      }
-    },
-    "changes": {
-      "type": "object",
-      "required": ["files_changed_count", "additions", "deletions", "files"],
-      "properties": {
-        "files_changed_count": { "type": "integer", "minimum": 1 },
-        "additions": { "type": "integer", "minimum": 0 },
-        "deletions": { "type": "integer", "minimum": 0 },
-        "files": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "required": ["filename", "status", "additions", "deletions", "is_test", "is_source", "is_doc"],
-            "properties": {
-              "filename": { "type": "string" },
-              "status": { "type": "string" },
-              "additions": { "type": "integer" },
-              "deletions": { "type": "integer" },
-              "changes": { "type": "integer" },
-              "is_test": { "type": "boolean" },
-              "is_source": { "type": "boolean" },
-              "is_doc": { "type": "boolean" },
-              "patch_snippet": { "type": "string" }
-            }
-          }
+  "dataset_version": "v1-genuine-hard",
+  "total_repos": 3,
+  "total_issues": 104,
+  "repos": [
+    {
+      "repo": "psf/requests",
+      "repo_url": "https://github.com/psf/requests",
+      "issues": [
+        {
+          "id": "psf__requests-7432",
+          "url": "https://github.com/psf/requests/pull/7433",
+          "title": "`prepare_body` stream detection regression",
+          "body": "...",
+          "base_commit": "0b401c76b6e80a4eecf3c690085b2553f6e261ca"
         }
-      }
-    },
-    "tests": {
-      "type": "object",
-      "required": ["test_files_changed", "test_files_count", "test_files"],
-      "properties": {
-        "test_files_changed": { "type": "boolean" },
-        "test_files_count": { "type": "integer", "minimum": 0 },
-        "test_files": { "type": "array", "items": { "type": "string" } }
-      }
+      ]
     }
-  }
+  ]
 }
 ```
-
 ---
 
 ## 3. Schema Kết Quả Requirement Analyzer (LLM Output Schema)

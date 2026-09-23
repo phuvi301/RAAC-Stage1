@@ -110,8 +110,12 @@
 ---
 
 ### Task 1.5: Chuẩn hóa Schema Dataset
-- **Mục tiêu:** Cố định định dạng JSON cho toàn bộ dự án, phân tách rõ các giai đoạn dữ liệu.
+- **Mục tiêu:** Cố định định dạng JSON cho toàn bộ dự án, phân tách rõ các giai đoạn dữ liệu, chuẩn hóa schema theo chuẩn SWE-bench mở rộng.
 - **Tài liệu bàn giao:** [`docs/dataset_schema.md`](file:///c:/Users/Admin/Desktop/DACN/Stage1/docs/dataset_schema.md).
+- **Trường dữ liệu nâng cao:**
+  - `base_commit`: Mã SHA commit trước khi PR merge (chuẩn SWE-bench) ở cấp root và `linked_pr`.
+  - `base_code`: Đoạn code nguyên bản trước khi merge trích xuất tự động từ git patch diff cho từng file thay đổi, giúp AI đối chiếu và chấm điểm rubric 4 trục $(C, T, S, I)$ chính xác nhất.
+  - `base_file_url` & `base_commit_url`: Đường dẫn trực tiếp tới file và commit trên GitHub.
 - **Phân định thư mục:**
   - `data/raw/`: Dữ liệu thô từ crawler.
   - `data/cleaned/`: Dữ liệu sạch đưa vào benchmark.

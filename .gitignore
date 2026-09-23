@@ -18,4 +18,3 @@ venv
 
 data/analyzer_outputs/*
 data/raw/*
-data/cleaned/*

@@ -28,10 +28,11 @@ SAMPLE_REPOS = [
 
 
 def generate_mock_raw_data() -> List[Dict[str, Any]]:
-    """Tạo dữ liệu mẫu đa dạng 4 trục phục vụ thử nghiệm pipeline nhanh."""
+    """Tạo dữ liệu mẫu đa dạng 4 trục phục vụ thử nghiệm pipeline nhanh kèm base_commit và base_code."""
     return [
         {
             "id": "psf_requests_4175",
+            "base_commit": "a4f89d38c64d8a1c92518e1b6f0e4b85994f2711",
             "issue": {
                 "number": 4175,
                 "title": "Session.send should not mutate request headers when prepared request is passed",
@@ -56,6 +57,12 @@ def generate_mock_raw_data() -> List[Dict[str, Any]]:
                 "state": "closed",
                 "merged": True,
                 "merged_at": "2023-01-12T13:55:00Z",
+                "base_branch": "main",
+                "head_branch": "fix-header-mutation",
+                "base_commit": "a4f89d38c64d8a1c92518e1b6f0e4b85994f2711",
+                "base_commit_url": "https://github.com/psf/requests/commit/a4f89d38c64d8a1c92518e1b6f0e4b85994f2711",
+                "head_commit": "c8e2193bfa78e50b32087ca393e4f3ca4a1cc2a6",
+                "merge_commit_sha": "d991ef23ba11c784992bb3024856aef192bca711",
                 "author": "dev_contributor",
                 "is_bot": False
             },
@@ -73,7 +80,10 @@ def generate_mock_raw_data() -> List[Dict[str, Any]]:
                         "is_test": False,
                         "is_source": True,
                         "is_doc": False,
-                        "patch_snippet": "@@ -640,7 +640,11 @@ class Session(object):\n-        request.headers.update(self.headers)\n+        headers = request.headers.copy()\n+        headers.update(self.headers)\n+        request.headers = headers"
+                        "is_comment_only": False,
+                        "patch_snippet": "@@ -640,7 +640,11 @@ class Session(object):\n-        request.headers.update(self.headers)\n+        headers = request.headers.copy()\n+        headers.update(self.headers)\n+        request.headers = headers",
+                        "base_code": "class Session(object):\n        request.headers.update(self.headers)",
+                        "base_file_url": "https://github.com/psf/requests/blob/a4f89d38c64d8a1c92518e1b6f0e4b85994f2711/requests/sessions.py"
                     },
                     {
                         "filename": "tests/test_requests.py",
@@ -84,7 +94,10 @@ def generate_mock_raw_data() -> List[Dict[str, Any]]:
                         "is_test": True,
                         "is_source": False,
                         "is_doc": False,
-                        "patch_snippet": "def test_session_send_does_not_mutate_headers():\n    ..."
+                        "is_comment_only": False,
+                        "patch_snippet": "@@ -120,6 +120,12 @@ def test_session():\n+def test_session_send_does_not_mutate_headers():\n+    s = requests.Session()\n+    req = s.prepare_request(requests.Request('GET', 'http://httpbin.org/get'))\n+    s.send(req)\n+    assert 'X-Custom' not in req.headers",
+                        "base_code": "def test_session():",
+                        "base_file_url": "https://github.com/psf/requests/blob/a4f89d38c64d8a1c92518e1b6f0e4b85994f2711/tests/test_requests.py"
                     }
                 ]
             },
@@ -96,6 +109,7 @@ def generate_mock_raw_data() -> List[Dict[str, Any]]:
         },
         {
             "id": "pallets_flask_3922",
+            "base_commit": "b2c91834920dfa561129ae35c7a9e10fa4e27f08",
             "issue": {
                 "number": 3922,
                 "title": "url_for raises KeyError when endpoint not found with subdomains",
@@ -120,6 +134,12 @@ def generate_mock_raw_data() -> List[Dict[str, Any]]:
                 "state": "closed",
                 "merged": True,
                 "merged_at": "2023-02-02T15:50:00Z",
+                "base_branch": "main",
+                "head_branch": "fix-url-for-subdomain",
+                "base_commit": "b2c91834920dfa561129ae35c7a9e10fa4e27f08",
+                "base_commit_url": "https://github.com/pallets/flask/commit/b2c91834920dfa561129ae35c7a9e10fa4e27f08",
+                "head_commit": "e818a7c81729bfa81903429bbcca83719028cb55",
+                "merge_commit_sha": "f1092837bcba1298471629485718a29bca019283",
                 "author": "flask_dev",
                 "is_bot": False
             },
@@ -128,8 +148,34 @@ def generate_mock_raw_data() -> List[Dict[str, Any]]:
                 "additions": 9,
                 "deletions": 2,
                 "files": [
-                    {"filename": "src/flask/helpers.py", "status": "modified", "additions": 4, "deletions": 2, "changes": 6, "is_test": False, "is_source": True, "is_doc": False, "patch_snippet": ""},
-                    {"filename": "tests/test_helpers.py", "status": "modified", "additions": 5, "deletions": 0, "changes": 5, "is_test": True, "is_source": False, "is_doc": False, "patch_snippet": ""}
+                    {
+                        "filename": "src/flask/helpers.py",
+                        "status": "modified",
+                        "additions": 4,
+                        "deletions": 2,
+                        "changes": 6,
+                        "is_test": False,
+                        "is_source": True,
+                        "is_doc": False,
+                        "is_comment_only": False,
+                        "patch_snippet": "@@ -310,4 +310,6 @@ def url_for(endpoint, **values):\n-    rv = url_adapter.build(endpoint, values)\n+    try:\n+        rv = url_adapter.build(endpoint, values)\n+    except KeyError as e:\n+        raise BuildError(endpoint, values, 'GET') from e",
+                        "base_code": "def url_for(endpoint, **values):\n    rv = url_adapter.build(endpoint, values)",
+                        "base_file_url": "https://github.com/pallets/flask/blob/b2c91834920dfa561129ae35c7a9e10fa4e27f08/src/flask/helpers.py"
+                    },
+                    {
+                        "filename": "tests/test_helpers.py",
+                        "status": "modified",
+                        "additions": 5,
+                        "deletions": 0,
+                        "changes": 5,
+                        "is_test": True,
+                        "is_source": False,
+                        "is_doc": False,
+                        "is_comment_only": False,
+                        "patch_snippet": "@@ -55,0 +55,5 @@ def test_url_for_subdomain_error():\n+def test_url_for_subdomain_error():\n+    with pytest.raises(BuildError):\n+        url_for('nonexistent')",
+                        "base_code": "",
+                        "base_file_url": "https://github.com/pallets/flask/blob/b2c91834920dfa561129ae35c7a9e10fa4e27f08/tests/test_helpers.py"
+                    }
                 ]
             },
             "tests": {
@@ -140,6 +186,7 @@ def generate_mock_raw_data() -> List[Dict[str, Any]]:
         },
         {
             "id": "encode_django-rest-framework_5832",
+            "base_commit": "c3e1092837492817294857102938475619283749",
             "issue": {
                 "number": 5832,
                 "title": "CSRF token disclosure vulnerability in SessionAuthentication during exception handling",
@@ -164,6 +211,12 @@ def generate_mock_raw_data() -> List[Dict[str, Any]]:
                 "state": "closed",
                 "merged": True,
                 "merged_at": "2023-03-07T10:45:00Z",
+                "base_branch": "master",
+                "head_branch": "fix-csrf-leak",
+                "base_commit": "c3e1092837492817294857102938475619283749",
+                "base_commit_url": "https://github.com/encode/django-rest-framework/commit/c3e1092837492817294857102938475619283749",
+                "head_commit": "a189283746192837461928374619283746192837",
+                "merge_commit_sha": "d091827364519283746192837461928374619283",
                 "author": "sec_researcher",
                 "is_bot": False
             },
@@ -172,9 +225,48 @@ def generate_mock_raw_data() -> List[Dict[str, Any]]:
                 "additions": 45,
                 "deletions": 8,
                 "files": [
-                    {"filename": "rest_framework/views.py", "status": "modified", "additions": 18, "deletions": 5, "changes": 23, "is_test": False, "is_source": True, "is_doc": False, "patch_snippet": ""},
-                    {"filename": "rest_framework/authentication.py", "status": "modified", "additions": 12, "deletions": 3, "changes": 15, "is_test": False, "is_source": True, "is_doc": False, "patch_snippet": ""},
-                    {"filename": "tests/test_authentication.py", "status": "modified", "additions": 15, "deletions": 0, "changes": 15, "is_test": True, "is_source": False, "is_doc": False, "patch_snippet": ""}
+                    {
+                        "filename": "rest_framework/views.py",
+                        "status": "modified",
+                        "additions": 18,
+                        "deletions": 5,
+                        "changes": 23,
+                        "is_test": False,
+                        "is_source": True,
+                        "is_doc": False,
+                        "is_comment_only": False,
+                        "patch_snippet": "@@ -80,5 +80,10 @@ def handle_exception(self, exc):\n-    response = exception_handler(exc, context)\n+    response = exception_handler(exc, context)\n+    if response is not None:\n+        response = sanitize_auth_headers(response)",
+                        "base_code": "def handle_exception(self, exc):\n    response = exception_handler(exc, context)",
+                        "base_file_url": "https://github.com/encode/django-rest-framework/blob/c3e1092837492817294857102938475619283749/rest_framework/views.py"
+                    },
+                    {
+                        "filename": "rest_framework/authentication.py",
+                        "status": "modified",
+                        "additions": 12,
+                        "deletions": 3,
+                        "changes": 15,
+                        "is_test": False,
+                        "is_source": True,
+                        "is_doc": False,
+                        "is_comment_only": False,
+                        "patch_snippet": "@@ -120,3 +120,8 @@ class SessionAuthentication:\n-    def enforce_csrf(self, request):\n+    def enforce_csrf(self, request):\n+        check_session_validity(request)",
+                        "base_code": "class SessionAuthentication:\n    def enforce_csrf(self, request):",
+                        "base_file_url": "https://github.com/encode/django-rest-framework/blob/c3e1092837492817294857102938475619283749/rest_framework/authentication.py"
+                    },
+                    {
+                        "filename": "tests/test_authentication.py",
+                        "status": "modified",
+                        "additions": 15,
+                        "deletions": 0,
+                        "changes": 15,
+                        "is_test": True,
+                        "is_source": False,
+                        "is_doc": False,
+                        "is_comment_only": False,
+                        "patch_snippet": "@@ -200,0 +200,8 @@ def test_csrf_not_leaked():\n+def test_csrf_not_leaked():\n+    client = APIClient()\n+    res = client.get('/error-view')\n+    assert 'Set-Cookie' not in res.headers",
+                        "base_code": "",
+                        "base_file_url": "https://github.com/encode/django-rest-framework/blob/c3e1092837492817294857102938475619283749/tests/test_authentication.py"
+                    }
                 ]
             },
             "tests": {
@@ -186,6 +278,7 @@ def generate_mock_raw_data() -> List[Dict[str, Any]]:
         # Mẫu một issue không đạt (Spam/Doc-only) để test bộ làm sạch
         {
             "id": "psf_requests_9999_invalid_doc",
+            "base_commit": "e991827364519283746192837461928374619283",
             "issue": {
                 "number": 9999,
                 "title": "Fix typo in README",
@@ -210,6 +303,12 @@ def generate_mock_raw_data() -> List[Dict[str, Any]]:
                 "state": "closed",
                 "merged": True,
                 "merged_at": "2023-04-01T01:00:00Z",
+                "base_branch": "main",
+                "head_branch": "fix-typo",
+                "base_commit": "e991827364519283746192837461928374619283",
+                "base_commit_url": "https://github.com/psf/requests/commit/e991827364519283746192837461928374619283",
+                "head_commit": "f001827364519283746192837461928374619283",
+                "merge_commit_sha": "a111827364519283746192837461928374619283",
                 "author": "typo_fixer",
                 "is_bot": False
             },
@@ -218,7 +317,20 @@ def generate_mock_raw_data() -> List[Dict[str, Any]]:
                 "additions": 1,
                 "deletions": 1,
                 "files": [
-                    {"filename": "README.md", "status": "modified", "additions": 1, "deletions": 1, "changes": 2, "is_test": False, "is_source": False, "is_doc": True, "patch_snippet": ""}
+                    {
+                        "filename": "README.md",
+                        "status": "modified",
+                        "additions": 1,
+                        "deletions": 1,
+                        "changes": 2,
+                        "is_test": False,
+                        "is_source": False,
+                        "is_doc": True,
+                        "is_comment_only": False,
+                        "patch_snippet": "@@ -1,2 +1,2 @@\n-requsts\n+requests",
+                        "base_code": "requsts",
+                        "base_file_url": "https://github.com/psf/requests/blob/e991827364519283746192837461928374619283/README.md"
+                    }
                 ]
             },
             "tests": {
