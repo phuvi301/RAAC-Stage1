@@ -35,13 +35,19 @@ class BatchRunner:
         output_dir: str = "data/analyzer_outputs",
         checkpoint_path: Optional[str] = None,
         temperature: Optional[float] = None,
-        run_label: Optional[str] = None
+        run_label: Optional[str] = None,
+        include_base_code: bool = False
     ):
         self.client = llm_client
         self.prompt_version = prompt_version
         self.output_dir = output_dir
         self.run_label = run_label
+        self.include_base_code = include_base_code
+        self.raw_lookup: Dict[str, Any] = {}
         os.makedirs(self.output_dir, exist_ok=True)
+
+        if self.include_base_code:
+            self._load_raw_lookup()
 
         if checkpoint_path:
             self.checkpoint_path = checkpoint_path
@@ -57,6 +63,24 @@ class BatchRunner:
 
         self.temperature = temperature if temperature is not None else (0.0 if prompt_version.lower().startswith("v3") else 0.1)
         self.builder = PromptBuilder(prompt_version=prompt_version)
+
+    def _load_raw_lookup(self):
+        """Tải dữ liệu raw để trích xuất base_code nếu dataset đã làm sạch không lưu trực tiếp code."""
+        base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+        raw_path = os.path.join(base_dir, "data", "raw", "all_crawled_raw.json")
+        if os.path.exists(raw_path):
+            try:
+                with open(raw_path, "r", encoding="utf-8") as f:
+                    raw_list = json.load(f)
+                    if isinstance(raw_list, list):
+                        for r in raw_list:
+                            rid = str(r.get("id", ""))
+                            self.raw_lookup[rid] = r
+                            norm_id = rid.replace("__", "_").replace("-", "_").lower()
+                            self.raw_lookup[norm_id] = r
+                logger.info(f"Loaded raw base_code lookup with {len(raw_list)} items for White-box analysis.")
+            except Exception as e:
+                logger.warning(f"Could not load raw base_code lookup from {raw_path}: {e}")
 
     def load_checkpoint(self) -> Dict[str, Any]:
         """Tải tiến độ đã xử lý từ trước."""
@@ -78,7 +102,21 @@ class BatchRunner:
     def process_issue(self, issue_record: Dict[str, Any], max_retries: int = 5) -> Dict[str, Any]:
         """Chạy analyzer cho một issue đơn lẻ với cơ chế retry và xử lý rate-limit thông minh."""
         issue_id = issue_record.get("id") or issue_record.get("issue_id") or "unknown_issue"
-        sys_prompt, user_prompt = self.builder.build_prompts(issue_record)
+        record_to_use = dict(issue_record)
+
+        if self.include_base_code and not record_to_use.get("base_code") and not record_to_use.get("changes"):
+            norm_id = str(issue_id).replace("__", "_").replace("-", "_").lower()
+            if norm_id in self.raw_lookup:
+                raw_rec = self.raw_lookup[norm_id]
+                if raw_rec.get("changes"):
+                    record_to_use["changes"] = raw_rec["changes"]
+                if raw_rec.get("base_code"):
+                    record_to_use["base_code"] = raw_rec["base_code"]
+
+        sys_prompt, user_prompt = self.builder.build_prompts(
+            record_to_use,
+            include_base_code=self.include_base_code
+        )
 
         for attempt in range(1, max_retries + 1):
             try:
@@ -196,6 +234,7 @@ def main():
     parser.add_argument("--run-label", default=None, help="Nhãn đợt chạy (ví dụ: run1, run2) phục vụ đánh giá agreement")
     parser.add_argument("--checkpoint", default=None, help="Tùy chọn chỉ định đường dẫn file checkpoint")
     parser.add_argument("--clean-checkpoint", action="store_true", help="Xóa checkpoint cũ để chạy lại từ đầu")
+    parser.add_argument("--include-base-code", action="store_true", default=False, help="Đính kèm base_code (mã nguồn trước khi sửa/merge) vào prompt phân tích")
     parser.add_argument("--delay", type=float, default=None, help="Delay (giây) giữa các requests (mặc định: 13s cho Gemini Free, 1s cho 9router/OpenAI, 0s cho mock)")
     args = parser.parse_args()
 
@@ -252,7 +291,8 @@ def main():
         prompt_version=args.version,
         checkpoint_path=checkpoint_file,
         temperature=args.temperature,
-        run_label=args.run_label
+        run_label=args.run_label,
+        include_base_code=args.include_base_code
     )
     runner.run_batch(issues, limit=args.limit, delay_seconds=delay)
 

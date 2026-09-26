@@ -260,6 +260,12 @@ def main():
         help="Xóa checkpoint của đợt chạy này để bắt đầu lại từ đầu"
     )
     parser.add_argument(
+        "--include-base-code",
+        action="store_true",
+        default=False,
+        help="Đính kèm base_code (mã nguồn trước khi sửa/merge) vào user prompt (White-box evaluation)"
+    )
+    parser.add_argument(
         "--compare",
         default=None,
         help="Đường dẫn tới file kết quả của run trước để đo đạc độ ổn định/đồng thuận (Agreement Analysis)"
@@ -307,7 +313,8 @@ def main():
         output_dir=args.output_dir,
         checkpoint_path=checkpoint_file,
         temperature=args.temperature,
-        run_label=args.run_label
+        run_label=args.run_label,
+        include_base_code=args.include_base_code
     )
 
     start_time = time.time()
