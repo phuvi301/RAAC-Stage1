@@ -31,16 +31,32 @@ class BatchRunner:
     def __init__(
         self,
         llm_client: BaseLLMClient,
-        prompt_version: str = "v2",
+        prompt_version: str = "v3",
         output_dir: str = "data/analyzer_outputs",
-        checkpoint_path: str = "data/analyzer_outputs/checkpoint.json"
+        checkpoint_path: Optional[str] = None,
+        temperature: Optional[float] = None,
+        run_label: Optional[str] = None
     ):
         self.client = llm_client
         self.prompt_version = prompt_version
         self.output_dir = output_dir
-        self.checkpoint_path = checkpoint_path
-        self.builder = PromptBuilder(prompt_version=prompt_version)
+        self.run_label = run_label
         os.makedirs(self.output_dir, exist_ok=True)
+
+        if checkpoint_path:
+            self.checkpoint_path = checkpoint_path
+        else:
+            label_suffix = f"_{run_label}" if run_label else ""
+            default_cp = os.path.join(self.output_dir, f"checkpoint_{prompt_version}{label_suffix}.json")
+            # Tương thích ngược: nếu chạy v2 không nhãn mà checkpoint.json cũ tồn tại
+            legacy_cp = os.path.join(self.output_dir, "checkpoint.json")
+            if prompt_version == "v2" and not run_label and not os.path.exists(default_cp) and os.path.exists(legacy_cp):
+                self.checkpoint_path = legacy_cp
+            else:
+                self.checkpoint_path = default_cp
+
+        self.temperature = temperature if temperature is not None else (0.0 if prompt_version.lower().startswith("v3") else 0.1)
+        self.builder = PromptBuilder(prompt_version=prompt_version)
 
     def load_checkpoint(self) -> Dict[str, Any]:
         """Tải tiến độ đã xử lý từ trước."""
@@ -48,7 +64,7 @@ class BatchRunner:
             try:
                 with open(self.checkpoint_path, "r", encoding="utf-8") as f:
                     data = json.load(f)
-                    logger.info(f"Loaded checkpoint with {len(data)} completed issues.")
+                    logger.info(f"Loaded checkpoint with {len(data)} completed issues from {self.checkpoint_path}.")
                     return data
             except Exception as e:
                 logger.warning(f"Failed to read checkpoint: {e}. Starting fresh.")
@@ -61,13 +77,13 @@ class BatchRunner:
 
     def process_issue(self, issue_record: Dict[str, Any], max_retries: int = 5) -> Dict[str, Any]:
         """Chạy analyzer cho một issue đơn lẻ với cơ chế retry và xử lý rate-limit thông minh."""
-        issue_id = issue_record.get("id")
+        issue_id = issue_record.get("id") or issue_record.get("issue_id") or "unknown_issue"
         sys_prompt, user_prompt = self.builder.build_prompts(issue_record)
 
         for attempt in range(1, max_retries + 1):
             try:
-                logger.info(f"Issue {issue_id}: Sending request to LLM (Attempt {attempt}/{max_retries})...")
-                llm_res = self.client.generate(sys_prompt, user_prompt)
+                logger.info(f"Issue {issue_id}: Sending request to LLM (Attempt {attempt}/{max_retries}, Temp: {self.temperature})...")
+                llm_res = self.client.generate(sys_prompt, user_prompt, temperature=self.temperature)
                 raw_text = llm_res.get("raw_text", "")
                 parsed_json = OutputParser.parse_llm_json(raw_text)
 
@@ -86,6 +102,7 @@ class BatchRunner:
                         "tokens_prompt": llm_res.get("prompt_tokens", 0),
                         "tokens_completion": llm_res.get("completion_tokens", 0),
                         "latency_ms": llm_res.get("latency_ms", 0),
+                        "temperature": self.temperature,
                         "status": "success",
                         "error_message": None
                     }
@@ -114,6 +131,7 @@ class BatchRunner:
                         "profile": None,
                         "metadata": {
                             "timestamp": datetime.now(timezone.utc).isoformat(),
+                            "temperature": self.temperature,
                             "status": "error",
                             "error_message": err_str
                         }
@@ -136,11 +154,11 @@ class BatchRunner:
         remaining_count = sum(1 for rec in target_issues if rec.get("id") not in processed_ids)
         logger.info(
             f"Starting batch analysis on {len(target_issues)} issues "
-            f"(Already completed: {len(processed_ids)}, Remaining: {remaining_count}, Delay between requests: {delay_seconds}s)..."
+            f"(Prompt: {self.prompt_version}, Already completed: {len(processed_ids)}, Remaining: {remaining_count}, Delay: {delay_seconds}s)..."
         )
 
         for idx, rec in enumerate(target_issues, 1):
-            rec_id = rec.get("id")
+            rec_id = rec.get("id") or rec.get("issue_id")
             if rec_id in processed_ids:
                 continue
 
@@ -158,7 +176,8 @@ class BatchRunner:
                 time.sleep(delay_seconds)
 
         timestamp_str = datetime.now().strftime("%Y%m%d_%H%M%S")
-        final_file = os.path.join(self.output_dir, f"analyzer_results_{self.prompt_version}_{timestamp_str}.json")
+        label_part = f"_{self.run_label}" if self.run_label else ""
+        final_file = os.path.join(self.output_dir, f"analyzer_results_{self.prompt_version}{label_part}_{timestamp_str}.json")
         with open(final_file, "w", encoding="utf-8") as f:
             json.dump(results, f, indent=2, ensure_ascii=False)
 
@@ -169,17 +188,24 @@ class BatchRunner:
 def main():
     parser = argparse.ArgumentParser(description="Batch Runner for RAAC Requirement Analyzer")
     parser.add_argument("--input", default="data/cleaned/cleaned_benchmark.json", help="Cleaned dataset path")
-    parser.add_argument("--provider", default=None, help="LLM provider: mock | openai | gemini")
-    parser.add_argument("--version", default="v2", help="Prompt version: v1 | v2")
+    parser.add_argument("--provider", default=None, help="LLM provider: mock | openai | gemini | 9router | anthropic")
+    parser.add_argument("--model", default=None, help="Tùy chọn ghi đè model ID (ví dụ: ag/gemini-3.8-flash, ag/claude-sonnet-4-6)")
+    parser.add_argument("--version", default="v3", choices=["v1", "v2", "v3"], help="Prompt version: v1 | v2 | v3 (mặc định: v3)")
+    parser.add_argument("--temperature", type=float, default=None, help="Tùy chọn ghi đè temperature (mặc định: 0.0 cho v3, 0.1 cho v1/v2)")
     parser.add_argument("--limit", type=int, default=None, help="Limit number of issues to process")
+    parser.add_argument("--run-label", default=None, help="Nhãn đợt chạy (ví dụ: run1, run2) phục vụ đánh giá agreement")
+    parser.add_argument("--checkpoint", default=None, help="Tùy chọn chỉ định đường dẫn file checkpoint")
     parser.add_argument("--clean-checkpoint", action="store_true", help="Xóa checkpoint cũ để chạy lại từ đầu")
-    parser.add_argument("--delay", type=float, default=13.0, help="Delay (giây) giữa các requests để tránh rate limit (mặc định: 13s cho Gemini Free Tier 5 RPM)")
+    parser.add_argument("--delay", type=float, default=None, help="Delay (giây) giữa các requests (mặc định: 13s cho Gemini Free, 1s cho 9router/OpenAI, 0s cho mock)")
     args = parser.parse_args()
 
-    checkpoint_file = "data/analyzer_outputs/checkpoint.json"
+    # Xác định file checkpoint
+    label_suffix = f"_{args.run_label}" if args.run_label else ""
+    checkpoint_file = args.checkpoint or f"data/analyzer_outputs/checkpoint_{args.version}{label_suffix}.json"
+
     if args.clean_checkpoint and os.path.exists(checkpoint_file):
         os.remove(checkpoint_file)
-        logger.info("Cleared existing checkpoint.")
+        logger.info(f"Cleared existing checkpoint: {checkpoint_file}")
 
     if not os.path.exists(args.input):
         logger.error(f"Input file not found: {args.input}. Run crawl_dataset.py and clean_dataset.py first!")
@@ -205,11 +231,29 @@ def main():
         logger.error(f"Unrecognized dataset format in {args.input}")
         return
 
-    # Nếu dùng mock thì không cần delay
-    delay = 0.0 if args.provider == "mock" else args.delay
+    # Tự động điều chỉnh delay mặc định theo từng provider
+    active_provider = (args.provider or os.getenv("LLM_PROVIDER", "mock")).lower()
+    if args.delay is not None:
+        delay = args.delay
+    elif active_provider == "mock":
+        delay = 0.0
+    elif active_provider in ("gemini", "google"):
+        delay = 13.0
+    else:
+        delay = 1.0
 
     llm_client = get_llm_client(args.provider)
-    runner = BatchRunner(llm_client=llm_client, prompt_version=args.version)
+    if args.model and hasattr(llm_client, "model"):
+        llm_client.model = args.model
+        logger.info(f"Using model override: {llm_client.model}")
+
+    runner = BatchRunner(
+        llm_client=llm_client,
+        prompt_version=args.version,
+        checkpoint_path=checkpoint_file,
+        temperature=args.temperature,
+        run_label=args.run_label
+    )
     runner.run_batch(issues, limit=args.limit, delay_seconds=delay)
 
 

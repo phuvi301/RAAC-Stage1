@@ -226,8 +226,13 @@ Mở tệp `.env` bằng trình soạn thảo (Notepad hoặc VS Code) và dán 
 # GitHub Token cho Crawler
 GITHUB_TOKEN=ghp_chuỗi_token_của_bạn_ở_đây
 
-# Nhà cung cấp LLM mặc định: "mock", "openai", hoặc "gemini"
-LLM_PROVIDER=mock
+# Nhà cung cấp LLM mặc định: "9router", "openai", "gemini", "anthropic", hoặc "mock"
+LLM_PROVIDER=9router
+
+# Nếu dùng 9Router (Local AI Gateway http://127.0.0.1:20128)
+NINEROUTER_BASE_URL=http://127.0.0.1:20128/v1
+NINEROUTER_API_KEY=sk-...
+NINEROUTER_MODEL=ag/gemini-3.8-flash
 
 # Nếu dùng OpenAI (GPT-4o / GPT-4o-mini)
 OPENAI_API_KEY=sk-...
@@ -342,6 +347,15 @@ Công cụ sẽ phân tích và in ra bảng tổng kết 4 chiều:
 
 Để chạy Requirement Analyzer bằng mô hình AI thực tế:
 
+#### Nếu chọn 9Router (Local AI Gateway khuyến nghị):
+1. Đảm bảo ứng dụng **9Router** đang chạy trên máy (mặc định tại `http://127.0.0.1:20128`).
+2. Mở dashboard 9Router để lấy API Key (hoặc hệ thống sẽ **tự động phát hiện** API key từ database SQLite của 9Router trên máy bạn).
+3. Cấu hình model mong muốn qua biến `NINEROUTER_MODEL` trong `.env` (ví dụ: `ag/gemini-3.8-flash`, `ag/claude-sonnet-4-6`).
+4. Kiểm tra kết nối nhanh bằng lệnh:
+```powershell
+python -m analyzer.llm_client --provider 9router
+```
+
 #### Nếu chọn OpenAI:
 1. Đăng nhập [https://platform.openai.com/api-keys](https://platform.openai.com/api-keys)
 2. Bấm **Create new secret key**, copy key bắt đầu bằng `sk-...`
@@ -365,26 +379,46 @@ Công cụ sẽ phân tích và in ra bảng tổng kết 4 chiều:
 
 ### Bước 8: Chạy Batch LLM Analyzer toàn dataset
 
-Chạy tiến trình phân tích tự động cho toàn bộ tập benchmark đã làm sạch:
+Chạy tiến trình phân tích tự động cho toàn bộ tập benchmark đã làm sạch (Hỗ trợ cả **Prompt v3.0** mới nhất và Prompt v2.0):
 
-#### Chạy chế độ Mock (Để kiểm tra luồng hoạt động, không mất phí):
+#### 8.1. Chạy với Prompt v3.0 (Khuyến nghị mới nhất - Tối ưu độ ổn định & tất định):
+Prompt v3.0 sử dụng chuẩn input JSON chuẩn hóa, nhiệt độ `temperature=0.0`, checkpoint riêng biệt và hỗ trợ kiểm tra tính ổn định/độ đồng thuận giữa các lần chạy:
+
 ```powershell
-python analyzer/batch_runner.py --provider mock --version v2
+# 1. Chạy thử nghiệm 3-5 issue với 9Router:
+python scripts/run_analyzer_v3.py --provider 9router --limit 5
+
+# 2. Chạy chính thức toàn bộ dataset (Run 1):
+python scripts/run_analyzer_v3.py --provider 9router --run-label run1
+
+# 3. Chạy đợt 2 (Run 2) và tự động so sánh tính đồng thuận (Agreement) với Run 1:
+python scripts/run_analyzer_v3.py --provider 9router --run-label run2 --compare data/analyzer_outputs/analyzer_results_v3_run1_<timestamp>.json
+
+# 4. Chạy chế độ Mock kiểm thử offline:
+python scripts/run_analyzer_v3.py --provider mock --limit 5
 ```
 
-#### Chạy thật với OpenAI hoặc Gemini:
+Hoặc sử dụng file batch tiện lợi trên Windows:
 ```powershell
-# Chạy với OpenAI (gpt-4o-mini)
-python analyzer/batch_runner.py --provider openai --version v2 --input data/cleaned/cleaned_benchmark.json
-
-# Hoặc chạy với Gemini (gemini-1.5-flash)
-python analyzer/batch_runner.py --provider gemini --version v2 --input data/cleaned/cleaned_benchmark.json
+.\scripts\run_v3.bat --provider 9router --run-label run1
 ```
 
-#### Các tùy chọn hữu ích khi chạy batch:
+#### 8.2. Chạy với Batch Runner chung (`analyzer/batch_runner.py`):
+```powershell
+# Chạy với Prompt v3 (mặc định)
+python analyzer/batch_runner.py --provider 9router --version v3
+
+# Chạy với Prompt v2 (phiên bản trước)
+python analyzer/batch_runner.py --provider 9router --version v2
+```
+
+#### Các tùy chọn hữu ích khi chạy analyzer:
 - Giới hạn số issue chạy thử: `--limit 5`
+- Lọc theo repository cụ thể: `--repo requests` hoặc `--repo flask`
 - Xóa tiến trình cũ chạy lại từ đầu: `--clean-checkpoint`
-- **Cơ chế phục hồi tự động:** Nếu đang chạy mà máy tính mất mạng hoặc bạn bấm `Ctrl + C`, bạn chỉ cần gõ lại lệnh trên mà không thêm `--clean-checkpoint`. Script sẽ tự động đọc `data/analyzer_outputs/checkpoint.json` và tiếp tục chạy từ vị trí bị ngắt quãng.
+- Ghi đè model bất kỳ: `--model ag/gemini-3.8-flash` hoặc `--model ag/claude-sonnet-4-6`
+- Tùy chỉnh độ trễ giữa các request: `--delay 1.0` (mặc định 9router/OpenAI là 1.0s, Gemini Free là 13.0s)
+- **Cơ chế phục hồi tự động:** Nếu đang chạy mà máy tính mất mạng hoặc bạn bấm `Ctrl + C`, bạn chỉ cần gõ lại lệnh trên mà không thêm `--clean-checkpoint`. Script sẽ tự động đọc checkpoint tương ứng (`checkpoint_v3.json`, `checkpoint_v3_run1.json`...) và tiếp tục chạy từ vị trí bị ngắt quãng.
 
 ---
 
