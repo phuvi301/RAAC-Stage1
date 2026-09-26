@@ -266,6 +266,11 @@ def main():
         help="Đính kèm base_code (mã nguồn trước khi sửa/merge) vào user prompt (White-box evaluation)"
     )
     parser.add_argument(
+        "--quiet",
+        action="store_true",
+        help="Tắt hiển thị chi tiết input/output của từng issue lên console"
+    )
+    parser.add_argument(
         "--compare",
         default=None,
         help="Đường dẫn tới file kết quả của run trước để đo đạc độ ổn định/đồng thuận (Agreement Analysis)"
@@ -314,7 +319,8 @@ def main():
         checkpoint_path=checkpoint_file,
         temperature=args.temperature,
         run_label=args.run_label,
-        include_base_code=args.include_base_code
+        include_base_code=args.include_base_code,
+        verbose=not args.quiet
     )
 
     start_time = time.time()

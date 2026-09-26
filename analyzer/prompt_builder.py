@@ -1,6 +1,10 @@
 """
 Module: prompt_builder.py
 Xây dựng system prompt và user prompt từ dữ liệu issue và template prompt Markdown.
+
+Hỗ trợ hai mode:
+  - issue_only  : chỉ dùng issue title + body (behavior gốc)
+  - repo_aware  : thêm phần # REPOSITORY CONTEXT (từ ContextBuilder) vào user prompt
 """
 
 import os
@@ -44,8 +48,21 @@ class PromptBuilder:
 
         return content
 
-    def build_prompts(self, issue_record: Dict[str, Any], include_base_code: Optional[bool] = None) -> Tuple[str, str]:
-        """Tạo cặp (system_prompt, user_prompt) cho một issue record."""
+    def build_prompts(
+        self,
+        issue_record: Dict[str, Any],
+        include_base_code: Optional[bool] = None,
+        repo_context_text: Optional[str] = None,
+    ) -> Tuple[str, str]:
+        """
+        Tạo cặp (system_prompt, user_prompt) cho một issue record.
+
+        Args:
+            issue_record: Dict chứa thông tin issue (title, body, repo, ...).
+            include_base_code: (legacy) Đính kèm base_code từ PR files vào prompt.
+            repo_context_text: (repo_aware mode) Nội dung phần # REPOSITORY CONTEXT
+                               được build bởi ContextBuilder. Nếu None → issue_only mode.
+        """
         issue = issue_record.get("issue") if isinstance(issue_record.get("issue"), dict) else {}
         repo = issue_record.get("repository") if isinstance(issue_record.get("repository"), dict) else {}
 
@@ -81,6 +98,11 @@ class PromptBuilder:
                     user_payload["base_code"] = "\n\n".join(base_code_snippets[:3])
 
             user_prompt = json.dumps(user_payload, ensure_ascii=False, indent=2)
+
+            # repo_aware mode: nối phần REPOSITORY CONTEXT vào sau JSON payload
+            if repo_context_text:
+                user_prompt = user_prompt + "\n\n" + repo_context_text
+
             return self.system_prompt, user_prompt
 
         # Đối với v1 và v2: giữ nguyên logic truyền thống
