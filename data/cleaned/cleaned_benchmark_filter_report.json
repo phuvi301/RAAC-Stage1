@@ -1,0 +1,630 @@
+{
+  "input": "C:\\Users\\Admin\\Desktop\\DACN\\Stage1\\data\\raw\\all_crawled_raw_1.json",
+  "input_sha256": "f7a4250b800c5299aae153b7d8ccf674d9d40ecc35b7f86c1db6e697ce86cf03",
+  "rules": "C:\\Users\\Admin\\Desktop\\DACN\\Stage1\\docs\\filter_rules.md",
+  "total_raw": 120,
+  "kept": 83,
+  "rejected": 37,
+  "counts": {
+    "non_substantive_review": 5,
+    "accepted": 83,
+    "no_substantive_source": 25,
+    "shared_pr": 2,
+    "insufficient_context": 2,
+    "under_3_lines": 3
+  },
+  "repositories": {
+    "scikit-learn/scikit-learn": 41,
+    "encode/django-rest-framework": 15,
+    "pallets/flask": 11,
+    "psf/requests": 13,
+    "expressjs/express": 3
+  },
+  "limitations": [
+    "Offline review of saved metadata and patch snippets, not full diffs or live external-link checks.",
+    "Three-line minimum applies to total PR additions plus deletions; substantive source change is required separately.",
+    "No filtering by RAAC score or test presence; Cython and runtime templates count as executable source."
+  ],
+  "decisions": [
+    {
+      "id": "psf_requests_1659",
+      "decision": "non_substantive_review",
+      "reason": "Release version/build metadata only; no implementation of the requested certificate automation."
+    },
+    {
+      "id": "scikit-learn_scikit-learn_7346",
+      "decision": "accepted",
+      "reason": "Merged main/master PR, sufficient requirement context and substantive code changes."
+    },
+    {
+      "id": "encode_django-rest-framework_8127",
+      "decision": "no_substantive_source",
+      "reason": "No substantive executable-source change in available patches."
+    },
+    {
+      "id": "scikit-learn_scikit-learn_20922",
+      "decision": "no_substantive_source",
+      "reason": "No substantive executable-source change in available patches."
+    },
+    {
+      "id": "expressjs_express_6968",
+      "decision": "no_substantive_source",
+      "reason": "No substantive executable-source change in available patches."
+    },
+    {
+      "id": "pallets_flask_1548",
+      "decision": "shared_pr",
+      "reason": "Retained pallets_flask_593, whose requirement directly matches the PR implementation."
+    },
+    {
+      "id": "encode_django-rest-framework_7117",
+      "decision": "accepted",
+      "reason": "Merged main/master PR, sufficient requirement context and substantive code changes."
+    },
+    {
+      "id": "encode_django-rest-framework_2034",
+      "decision": "accepted",
+      "reason": "Merged main/master PR, sufficient requirement context and substantive code changes."
+    },
+    {
+      "id": "scikit-learn_scikit-learn_29145",
+      "decision": "accepted",
+      "reason": "Merged main/master PR, sufficient requirement context and substantive code changes."
+    },
+    {
+      "id": "encode_django-rest-framework_6131",
+      "decision": "accepted",
+      "reason": "Merged main/master PR, sufficient requirement context and substantive code changes."
+    },
+    {
+      "id": "scikit-learn_scikit-learn_12447",
+      "decision": "accepted",
+      "reason": "Merged main/master PR, sufficient requirement context and substantive code changes."
+    },
+    {
+      "id": "psf_requests_2062",
+      "decision": "no_substantive_source",
+      "reason": "No substantive executable-source change in available patches."
+    },
+    {
+      "id": "scikit-learn_scikit-learn_11041",
+      "decision": "no_substantive_source",
+      "reason": "No substantive executable-source change in available patches."
+    },
+    {
+      "id": "encode_django-rest-framework_6178",
+      "decision": "accepted",
+      "reason": "Merged main/master PR, sufficient requirement context and substantive code changes."
+    },
+    {
+      "id": "scikit-learn_scikit-learn_6599",
+      "decision": "accepted",
+      "reason": "Merged main/master PR, sufficient requirement context and substantive code changes."
+    },
+    {
+      "id": "pallets_flask_2520",
+      "decision": "accepted",
+      "reason": "Merged main/master PR, sufficient requirement context and substantive code changes."
+    },
+    {
+      "id": "scikit-learn_scikit-learn_21494",
+      "decision": "accepted",
+      "reason": "Merged main/master PR, sufficient requirement context and substantive code changes."
+    },
+    {
+      "id": "scikit-learn_scikit-learn_16155",
+      "decision": "accepted",
+      "reason": "Merged main/master PR, sufficient requirement context and substantive code changes."
+    },
+    {
+      "id": "scikit-learn_scikit-learn_2034",
+      "decision": "accepted",
+      "reason": "Merged main/master PR, sufficient requirement context and substantive code changes."
+    },
+    {
+      "id": "psf_requests_6071",
+      "decision": "accepted",
+      "reason": "Merged main/master PR, sufficient requirement context and substantive code changes."
+    },
+    {
+      "id": "psf_requests_3659",
+      "decision": "accepted",
+      "reason": "Merged main/master PR, sufficient requirement context and substantive code changes."
+    },
+    {
+      "id": "pallets_flask_2174",
+      "decision": "no_substantive_source",
+      "reason": "No substantive executable-source change in available patches."
+    },
+    {
+      "id": "scikit-learn_scikit-learn_10521",
+      "decision": "accepted",
+      "reason": "Merged main/master PR, sufficient requirement context and substantive code changes."
+    },
+    {
+      "id": "scikit-learn_scikit-learn_11259",
+      "decision": "accepted",
+      "reason": "Merged main/master PR, sufficient requirement context and substantive code changes."
+    },
+    {
+      "id": "pallets_flask_836",
+      "decision": "no_substantive_source",
+      "reason": "No substantive executable-source change in available patches."
+    },
+    {
+      "id": "scikit-learn_scikit-learn_20306",
+      "decision": "accepted",
+      "reason": "Merged main/master PR, sufficient requirement context and substantive code changes."
+    },
+    {
+      "id": "scikit-learn_scikit-learn_27613",
+      "decision": "accepted",
+      "reason": "Merged main/master PR, sufficient requirement context and substantive code changes."
+    },
+    {
+      "id": "encode_django-rest-framework_5399",
+      "decision": "accepted",
+      "reason": "Merged main/master PR, sufficient requirement context and substantive code changes."
+    },
+    {
+      "id": "encode_django-rest-framework_2218",
+      "decision": "accepted",
+      "reason": "Merged main/master PR, sufficient requirement context and substantive code changes."
+    },
+    {
+      "id": "scikit-learn_scikit-learn_10744",
+      "decision": "accepted",
+      "reason": "Merged main/master PR, sufficient requirement context and substantive code changes."
+    },
+    {
+      "id": "scikit-learn_scikit-learn_9543",
+      "decision": "accepted",
+      "reason": "Merged main/master PR, sufficient requirement context and substantive code changes."
+    },
+    {
+      "id": "pallets_flask_3215",
+      "decision": "accepted",
+      "reason": "Merged main/master PR, sufficient requirement context and substantive code changes."
+    },
+    {
+      "id": "expressjs_express_7304",
+      "decision": "insufficient_context",
+      "reason": "Under 20 words without a reviewed completeness exception."
+    },
+    {
+      "id": "scikit-learn_scikit-learn_34252",
+      "decision": "accepted",
+      "reason": "Merged main/master PR, sufficient requirement context and substantive code changes."
+    },
+    {
+      "id": "scikit-learn_scikit-learn_8089",
+      "decision": "accepted",
+      "reason": "Merged main/master PR, sufficient requirement context and substantive code changes."
+    },
+    {
+      "id": "scikit-learn_scikit-learn_1848",
+      "decision": "accepted",
+      "reason": "Merged main/master PR, sufficient requirement context and substantive code changes."
+    },
+    {
+      "id": "scikit-learn_scikit-learn_15787",
+      "decision": "accepted",
+      "reason": "Merged main/master PR, sufficient requirement context and substantive code changes."
+    },
+    {
+      "id": "scikit-learn_scikit-learn_29253",
+      "decision": "no_substantive_source",
+      "reason": "No substantive executable-source change in available patches."
+    },
+    {
+      "id": "scikit-learn_scikit-learn_9626",
+      "decision": "accepted",
+      "reason": "Merged main/master PR, sufficient requirement context and substantive code changes."
+    },
+    {
+      "id": "psf_requests_6810",
+      "decision": "accepted",
+      "reason": "Merged main/master PR, sufficient requirement context and substantive code changes."
+    },
+    {
+      "id": "psf_requests_2025",
+      "decision": "accepted",
+      "reason": "Short but explicit JSON upload feature request with requests.post(json=...) example."
+    },
+    {
+      "id": "expressjs_express_5058",
+      "decision": "accepted",
+      "reason": "Merged main/master PR, sufficient requirement context and substantive code changes."
+    },
+    {
+      "id": "encode_django-rest-framework_6761",
+      "decision": "accepted",
+      "reason": "Merged main/master PR, sufficient requirement context and substantive code changes."
+    },
+    {
+      "id": "pallets_flask_593",
+      "decision": "accepted",
+      "reason": "Merged main/master PR, sufficient requirement context and substantive code changes."
+    },
+    {
+      "id": "encode_django-rest-framework_4994",
+      "decision": "under_3_lines",
+      "reason": "Total PR additions plus deletions below 3."
+    },
+    {
+      "id": "scikit-learn_scikit-learn_6557",
+      "decision": "accepted",
+      "reason": "Merged main/master PR, sufficient requirement context and substantive code changes."
+    },
+    {
+      "id": "psf_requests_1995",
+      "decision": "accepted",
+      "reason": "Merged main/master PR, sufficient requirement context and substantive code changes."
+    },
+    {
+      "id": "scikit-learn_scikit-learn_11816",
+      "decision": "accepted",
+      "reason": "Merged main/master PR, sufficient requirement context and substantive code changes."
+    },
+    {
+      "id": "scikit-learn_scikit-learn_13499",
+      "decision": "non_substantive_review",
+      "reason": "Documentation and grammatical correction inside a module docstring only."
+    },
+    {
+      "id": "scikit-learn_scikit-learn_28325",
+      "decision": "no_substantive_source",
+      "reason": "No substantive executable-source change in available patches."
+    },
+    {
+      "id": "psf_requests_2408",
+      "decision": "accepted",
+      "reason": "Merged main/master PR, sufficient requirement context and substantive code changes."
+    },
+    {
+      "id": "scikit-learn_scikit-learn_28625",
+      "decision": "accepted",
+      "reason": "Merged main/master PR, sufficient requirement context and substantive code changes."
+    },
+    {
+      "id": "psf_requests_1767",
+      "decision": "accepted",
+      "reason": "Merged main/master PR, sufficient requirement context and substantive code changes."
+    },
+    {
+      "id": "pallets_flask_3088",
+      "decision": "accepted",
+      "reason": "Merged main/master PR, sufficient requirement context and substantive code changes."
+    },
+    {
+      "id": "encode_django-rest-framework_2466",
+      "decision": "accepted",
+      "reason": "Merged main/master PR, sufficient requirement context and substantive code changes."
+    },
+    {
+      "id": "encode_django-rest-framework_7417",
+      "decision": "accepted",
+      "reason": "Merged main/master PR, sufficient requirement context and substantive code changes."
+    },
+    {
+      "id": "scikit-learn_scikit-learn_7687",
+      "decision": "accepted",
+      "reason": "Merged main/master PR, sufficient requirement context and substantive code changes."
+    },
+    {
+      "id": "scikit-learn_scikit-learn_12676",
+      "decision": "no_substantive_source",
+      "reason": "No substantive executable-source change in available patches."
+    },
+    {
+      "id": "encode_django-rest-framework_5162",
+      "decision": "accepted",
+      "reason": "Merged main/master PR, sufficient requirement context and substantive code changes."
+    },
+    {
+      "id": "pallets_flask_2375",
+      "decision": "accepted",
+      "reason": "Merged main/master PR, sufficient requirement context and substantive code changes."
+    },
+    {
+      "id": "encode_django-rest-framework_3371",
+      "decision": "accepted",
+      "reason": "Merged main/master PR, sufficient requirement context and substantive code changes."
+    },
+    {
+      "id": "scikit-learn_scikit-learn_2801",
+      "decision": "no_substantive_source",
+      "reason": "No substantive executable-source change in available patches."
+    },
+    {
+      "id": "scikit-learn_scikit-learn_9193",
+      "decision": "no_substantive_source",
+      "reason": "No substantive executable-source change in available patches."
+    },
+    {
+      "id": "scikit-learn_scikit-learn_18891",
+      "decision": "accepted",
+      "reason": "Merged main/master PR, sufficient requirement context and substantive code changes."
+    },
+    {
+      "id": "scikit-learn_scikit-learn_16016",
+      "decision": "accepted",
+      "reason": "Merged main/master PR, sufficient requirement context and substantive code changes."
+    },
+    {
+      "id": "scikit-learn_scikit-learn_6425",
+      "decision": "accepted",
+      "reason": "Merged main/master PR, sufficient requirement context and substantive code changes."
+    },
+    {
+      "id": "pallets_flask_986",
+      "decision": "no_substantive_source",
+      "reason": "No substantive executable-source change in available patches."
+    },
+    {
+      "id": "encode_django-rest-framework_7134",
+      "decision": "no_substantive_source",
+      "reason": "No substantive executable-source change in available patches."
+    },
+    {
+      "id": "scikit-learn_scikit-learn_29395",
+      "decision": "no_substantive_source",
+      "reason": "No substantive executable-source change in available patches."
+    },
+    {
+      "id": "scikit-learn_scikit-learn_24381",
+      "decision": "accepted",
+      "reason": "Merged main/master PR, sufficient requirement context and substantive code changes."
+    },
+    {
+      "id": "encode_django-rest-framework_1035",
+      "decision": "accepted",
+      "reason": "Merged main/master PR, sufficient requirement context and substantive code changes."
+    },
+    {
+      "id": "pallets_flask_1151",
+      "decision": "non_substantive_review",
+      "reason": "Context documentation, docstrings and error-message wording only."
+    },
+    {
+      "id": "scikit-learn_scikit-learn_24580",
+      "decision": "accepted",
+      "reason": "Merged main/master PR, sufficient requirement context and substantive code changes."
+    },
+    {
+      "id": "scikit-learn_scikit-learn_31286",
+      "decision": "no_substantive_source",
+      "reason": "No substantive executable-source change in available patches."
+    },
+    {
+      "id": "scikit-learn_scikit-learn_21993",
+      "decision": "accepted",
+      "reason": "Merged main/master PR, sufficient requirement context and substantive code changes."
+    },
+    {
+      "id": "psf_requests_2465",
+      "decision": "under_3_lines",
+      "reason": "Total PR additions plus deletions below 3."
+    },
+    {
+      "id": "scikit-learn_scikit-learn_19522",
+      "decision": "accepted",
+      "reason": "Merged main/master PR, sufficient requirement context and substantive code changes."
+    },
+    {
+      "id": "scikit-learn_scikit-learn_27014",
+      "decision": "accepted",
+      "reason": "Merged main/master PR, sufficient requirement context and substantive code changes."
+    },
+    {
+      "id": "expressjs_express_696",
+      "decision": "accepted",
+      "reason": "Merged main/master PR, sufficient requirement context and substantive code changes."
+    },
+    {
+      "id": "psf_requests_2411",
+      "decision": "accepted",
+      "reason": "Merged main/master PR, sufficient requirement context and substantive code changes."
+    },
+    {
+      "id": "encode_django-rest-framework_5804",
+      "decision": "accepted",
+      "reason": "Merged main/master PR, sufficient requirement context and substantive code changes."
+    },
+    {
+      "id": "psf_requests_1882",
+      "decision": "accepted",
+      "reason": "Merged main/master PR, sufficient requirement context and substantive code changes."
+    },
+    {
+      "id": "psf_requests_2511",
+      "decision": "no_substantive_source",
+      "reason": "No substantive executable-source change in available patches."
+    },
+    {
+      "id": "psf_requests_2462",
+      "decision": "accepted",
+      "reason": "Merged main/master PR, sufficient requirement context and substantive code changes."
+    },
+    {
+      "id": "expressjs_express_6462",
+      "decision": "accepted",
+      "reason": "Merged main/master PR, sufficient requirement context and substantive code changes."
+    },
+    {
+      "id": "pallets_flask_2424",
+      "decision": "no_substantive_source",
+      "reason": "No substantive executable-source change in available patches."
+    },
+    {
+      "id": "psf_requests_5212",
+      "decision": "accepted",
+      "reason": "Merged main/master PR, sufficient requirement context and substantive code changes."
+    },
+    {
+      "id": "scikit-learn_scikit-learn_30079",
+      "decision": "accepted",
+      "reason": "Merged main/master PR, sufficient requirement context and substantive code changes."
+    },
+    {
+      "id": "scikit-learn_scikit-learn_21361",
+      "decision": "accepted",
+      "reason": "Merged main/master PR, sufficient requirement context and substantive code changes."
+    },
+    {
+      "id": "pallets_flask_4460",
+      "decision": "accepted",
+      "reason": "Merged main/master PR, sufficient requirement context and substantive code changes."
+    },
+    {
+      "id": "psf_requests_2418",
+      "decision": "no_substantive_source",
+      "reason": "No substantive executable-source change in available patches."
+    },
+    {
+      "id": "scikit-learn_scikit-learn_33167",
+      "decision": "accepted",
+      "reason": "Merged main/master PR, sufficient requirement context and substantive code changes."
+    },
+    {
+      "id": "scikit-learn_scikit-learn_7102",
+      "decision": "accepted",
+      "reason": "Merged main/master PR, sufficient requirement context and substantive code changes."
+    },
+    {
+      "id": "encode_django-rest-framework_2996",
+      "decision": "shared_pr",
+      "reason": "Retained encode_django-rest-framework_2848, whose requirement directly matches the PR implementation."
+    },
+    {
+      "id": "pallets_flask_348",
+      "decision": "no_substantive_source",
+      "reason": "No substantive executable-source change in available patches."
+    },
+    {
+      "id": "scikit-learn_scikit-learn_13621",
+      "decision": "accepted",
+      "reason": "Merged main/master PR, sufficient requirement context and substantive code changes."
+    },
+    {
+      "id": "pallets_flask_1101",
+      "decision": "no_substantive_source",
+      "reason": "No substantive executable-source change in available patches."
+    },
+    {
+      "id": "scikit-learn_scikit-learn_19602",
+      "decision": "accepted",
+      "reason": "Merged main/master PR, sufficient requirement context and substantive code changes."
+    },
+    {
+      "id": "pallets_flask_2027",
+      "decision": "insufficient_context",
+      "reason": "Under 20 words without a reviewed completeness exception."
+    },
+    {
+      "id": "scikit-learn_scikit-learn_13073",
+      "decision": "accepted",
+      "reason": "Merged main/master PR, sufficient requirement context and substantive code changes."
+    },
+    {
+      "id": "pallets_flask_3134",
+      "decision": "accepted",
+      "reason": "Merged main/master PR, sufficient requirement context and substantive code changes."
+    },
+    {
+      "id": "psf_requests_1572",
+      "decision": "accepted",
+      "reason": "Merged main/master PR, sufficient requirement context and substantive code changes."
+    },
+    {
+      "id": "expressjs_express_6593",
+      "decision": "no_substantive_source",
+      "reason": "No substantive executable-source change in available patches."
+    },
+    {
+      "id": "pallets_flask_618",
+      "decision": "under_3_lines",
+      "reason": "Total PR additions plus deletions below 3."
+    },
+    {
+      "id": "scikit-learn_scikit-learn_33590",
+      "decision": "accepted",
+      "reason": "Merged main/master PR, sufficient requirement context and substantive code changes."
+    },
+    {
+      "id": "psf_requests_1939",
+      "decision": "accepted",
+      "reason": "Merged main/master PR, sufficient requirement context and substantive code changes."
+    },
+    {
+      "id": "pallets_flask_2926",
+      "decision": "accepted",
+      "reason": "Merged main/master PR, sufficient requirement context and substantive code changes."
+    },
+    {
+      "id": "scikit-learn_scikit-learn_29587",
+      "decision": "non_substantive_review",
+      "reason": "Only clarifies multithreading in docstrings; no runtime change."
+    },
+    {
+      "id": "pallets_flask_981",
+      "decision": "no_substantive_source",
+      "reason": "No substantive executable-source change in available patches."
+    },
+    {
+      "id": "pallets_flask_1765",
+      "decision": "accepted",
+      "reason": "Merged main/master PR, sufficient requirement context and substantive code changes."
+    },
+    {
+      "id": "scikit-learn_scikit-learn_28710",
+      "decision": "no_substantive_source",
+      "reason": "No substantive executable-source change in available patches."
+    },
+    {
+      "id": "pallets_flask_1809",
+      "decision": "non_substantive_review",
+      "reason": "API documentation and cosmetic formatting only."
+    },
+    {
+      "id": "pallets_flask_2586",
+      "decision": "accepted",
+      "reason": "Merged main/master PR, sufficient requirement context and substantive code changes."
+    },
+    {
+      "id": "scikit-learn_scikit-learn_9393",
+      "decision": "accepted",
+      "reason": "Merged main/master PR, sufficient requirement context and substantive code changes."
+    },
+    {
+      "id": "pallets_flask_3354",
+      "decision": "no_substantive_source",
+      "reason": "No substantive executable-source change in available patches."
+    },
+    {
+      "id": "scikit-learn_scikit-learn_27373",
+      "decision": "accepted",
+      "reason": "Merged main/master PR, sufficient requirement context and substantive code changes."
+    },
+    {
+      "id": "pallets_flask_3108",
+      "decision": "accepted",
+      "reason": "Merged main/master PR, sufficient requirement context and substantive code changes."
+    },
+    {
+      "id": "encode_django-rest-framework_2630",
+      "decision": "accepted",
+      "reason": "Merged main/master PR, sufficient requirement context and substantive code changes."
+    },
+    {
+      "id": "scikit-learn_scikit-learn_12250",
+      "decision": "accepted",
+      "reason": "Merged main/master PR, sufficient requirement context and substantive code changes."
+    },
+    {
+      "id": "encode_django-rest-framework_2848",
+      "decision": "accepted",
+      "reason": "Merged main/master PR, sufficient requirement context and substantive code changes."
+    }
+  ]
+}
